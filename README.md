@@ -57,4 +57,6 @@ The stock data is fetched from Yahoo Finance using the yfinance Python library.
 - Plotly
 - yfinance
 
-  
+# STREAMLIT
+
+https://itstocksproject-8tbzn6rcmj2rwqq5bjcacu.streamlit.app/
