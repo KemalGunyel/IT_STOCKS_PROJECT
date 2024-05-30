@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import yfinance as yf
+from time import sleep
 
 # List of tech stock symbols
 tech_stocks = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NFLX', 'NVDA', 'AMD', 'SSNLF', 'CSCO', 'ORCL', 'SAP', 'IBM', 'INTC', 'CRM', 'ADBE']
@@ -17,17 +18,28 @@ turning_points = {
     'Vaccination Rollout': '2020-12-14'
 }
 
-def fetch_stock_data(symbol, start_date, end_date):
-    df = yf.download(symbol, start=start_date, end=end_date)
-    df['Symbol'] = symbol
-    df.reset_index(inplace=True)  # Ensure 'Date' is a column, not the index
-    return df
+def fetch_stock_data(symbol, start_date, end_date, retries=3):
+    attempt = 0
+    while attempt < retries:
+        try:
+            df = yf.download(symbol, start=start_date, end=end_date, progress=False)
+            df['Symbol'] = symbol
+            df.reset_index(inplace=True)  # Ensure 'Date' is a column, not the index
+            return df
+        except Exception as e:
+            attempt += 1
+            if attempt == retries:
+                st.error(f"Error fetching data for {symbol}: {e}")
+            else:
+                sleep(1)  # Wait a bit before retrying
+    return pd.DataFrame()
 
 def load_data():
     combined_df = pd.DataFrame()
     for stock in tech_stocks:
         df = fetch_stock_data(stock, START_DATE, END_DATE)
-        combined_df = pd.concat([combined_df, df], ignore_index=True)
+        if not df.empty:
+            combined_df = pd.concat([combined_df, df], ignore_index=True)
     return combined_df
 
 combined_df = load_data()
